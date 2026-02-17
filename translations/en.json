@@ -1,0 +1,24 @@
+{
+  "title": "Technitium Block Pause",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Technitium Block Pause",
+        "description": "Enter your Technitium Block Pause API details.",
+        "data": {
+          "host": "Host URL",
+          "api_key": "API Key"
+        }
+      }
+    }
+  },
+  "services": {
+    "pause_ad_blocking": {
+      "name": "Pause Ad Blocking",
+      "description": "Pause ad blocking for a specified number of seconds.",
+      "fields": {
+        "duration": "Duration (seconds)"
+      }
+    }
+  }
+}

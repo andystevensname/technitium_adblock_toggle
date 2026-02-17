@@ -1,0 +1,9 @@
+{
+  "domain": "technitium-block-pause",
+  "name": "Technitium Block Pause",
+  "version": "0.1.0",
+  "documentation": "https://github.com/TechnitiumSoftware/DnsServer",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@your-github-username"]
+}
