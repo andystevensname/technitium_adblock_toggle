@@ -1,11 +1,10 @@
-import aiohttp
 
-class TechnitiumApi:
-    def __init__(self, host, api_key, timeout=10):
+
+    def __init__(self, host, api_key, session, timeout=10):
         self._host = host
         self._api_key = api_key
         self._timeout = timeout
-        self._session = aiohttp.ClientSession()
+        self._session = session
 
     async def get_status(self):
         url = f"{self._host}/api/status"
@@ -36,4 +35,5 @@ class TechnitiumApi:
             return None
 
     async def close(self):
-        await self._session.close()
+        # No need to close Home Assistant's managed session
+        pass

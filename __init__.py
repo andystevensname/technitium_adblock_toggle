@@ -11,6 +11,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Set up Technitium Block Pause from a config entry
     from .api import TechnitiumApi
     from .coordinator import TechnitiumBlockPauseDataUpdateCoordinator
+    from homeassistant.helpers.aiohttp_client import async_get_clientsession
     hass.data.setdefault(DOMAIN, {})
     host = entry.data["host"]
     api_key = entry.data["api_key"]
@@ -19,7 +20,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     pause_min = options.get("pause_min", 1)
     pause_max = options.get("pause_max", 3600)
     api_timeout = options.get("api_timeout", 10)
-    api = TechnitiumApi(host, api_key, api_timeout)
+    session = async_get_clientsession(hass)
+    api = TechnitiumApi(host, api_key, session, api_timeout)
     coordinator = TechnitiumBlockPauseDataUpdateCoordinator(hass, api, update_interval)
     await coordinator.async_config_entry_first_refresh()
     hass.data[DOMAIN][entry.entry_id] = {"api": api, "coordinator": coordinator, "pause_min": pause_min, "pause_max": pause_max}
