@@ -1,43 +1,49 @@
+import logging
+
+_LOGGER = logging.getLogger(__name__)
+
+
 class TechnitiumApi:
     def __init__(self, host, api_key, session, timeout=10):
-        self._host = host
+        self._host = host.rstrip('/')
         self._api_key = api_key
         self._timeout = timeout
         self._session = session
 
     async def get_status(self):
-        url = f"{self._host}/api/status"
-        headers = {"Authorization": f"Bearer {self._api_key}"}
-        import logging
-        logger = logging.getLogger(__name__)
+        url = f"{self._host}/api/settings/get"
+        params = {"token": self._api_key}
         try:
-            logger.debug(f"Requesting Technitium status from {url} with headers {headers}")
-            async with self._session.get(url, headers=headers, timeout=self._timeout) as resp:
-                logger.debug(f"Technitium status response code: {resp.status}")
+            _LOGGER.debug(f"Requesting Technitium status from {url}")
+            async with self._session.get(url, params=params, timeout=self._timeout) as resp:
+                _LOGGER.debug(f"Technitium status response code: {resp.status}")
                 resp.raise_for_status()
                 data = await resp.json()
-                logger.debug(f"Technitium status response data: {data}")
-                return {"ad_blocking_status": data.get("adBlockingEnabled")}
+                _LOGGER.debug(f"Technitium status response data: {data}")
+                response = data.get("response", {})
+                # Check if blocking is enabled (temporaryDisableBlockingTill being null/absent means blocking is active)
+                temp_disable_till = response.get("temporaryDisableBlockingTill")
+                blocking_enabled = temp_disable_till is None or temp_disable_till == ""
+                return {"ad_blocking_status": blocking_enabled}
         except Exception as e:
-            logger.error(f"Error fetching Technitium status from {url} with key {self._api_key}: {e}")
+            _LOGGER.error(f"Error fetching Technitium status: {e}")
             return {"ad_blocking_status": None}
 
     async def pause_ad_blocking(self, seconds):
-        url = f"{self._host}/api/pause"
-        headers = {"Authorization": f"Bearer {self._api_key}"}
-        payload = {"duration": seconds}
-        import logging
-        logger = logging.getLogger(__name__)
+        # Technitium uses minutes, not seconds
+        minutes = max(1, seconds // 60)
+        url = f"{self._host}/api/settings/temporaryDisableBlocking"
+        params = {"token": self._api_key, "minutes": minutes}
         try:
-            logger.debug(f"Sending pause request to {url} with headers {headers} and payload {payload}")
-            async with self._session.post(url, headers=headers, json=payload, timeout=self._timeout) as resp:
-                logger.debug(f"Technitium pause response code: {resp.status}")
+            _LOGGER.debug(f"Sending pause request to {url} for {minutes} minutes")
+            async with self._session.get(url, params=params, timeout=self._timeout) as resp:
+                _LOGGER.debug(f"Technitium pause response code: {resp.status}")
                 resp.raise_for_status()
                 data = await resp.json()
-                logger.debug(f"Technitium pause response data: {data}")
+                _LOGGER.debug(f"Technitium pause response data: {data}")
                 return data
         except Exception as e:
-            logger.error(f"Error pausing ad blocking at {url} with key {self._api_key} and payload {payload}: {e}")
+            _LOGGER.error(f"Error pausing ad blocking: {e}")
             return None
 
     async def close(self):
