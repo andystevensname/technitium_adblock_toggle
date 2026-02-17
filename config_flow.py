@@ -1,3 +1,5 @@
+
+from homeassistant import config_entries
 from homeassistant.helpers import config_validation as cv
 
 class TechnitiumBlockPauseOptionsFlowHandler(config_entries.OptionsFlow):
